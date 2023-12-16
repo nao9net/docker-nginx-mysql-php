@@ -1,0 +1,33 @@
+services:
+  app:
+    container_name: app
+    build: ./sv/php
+    volumes:
+      - ./app:/var/www
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - 8001:80
+    volumes:
+      - ./app:/var/www
+      - ./sv/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    working_dir: /var/www
+    depends_on:
+      - app
+  db:
+    image: mysql
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: database
+      MYSQL_USER: db-user
+      MYSQL_PASSWORD: db-pass
+      TZ: "Asia/Tokyo"
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./sv/db/data:/var/lib/mysql
+      - ./sv/db/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./sv/db/sql:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
